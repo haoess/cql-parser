@@ -164,6 +164,51 @@ sub toLucene {
     }
 }
 
+=head2 toManticore()
+
+=cut
+
+sub toManticore {
+    my $self      = shift;
+    my $qualifier = maybeQuote( $self->getQualifier() );
+    my $term      = maybeQuote( $self->getTerm() );
+    my $relation  = $self->getRelation();
+
+    my $query;
+    if ( $qualifier and $qualifier !~ /srw\.serverChoice/i ) {
+        my $base      = $relation->getBase();
+        my @modifiers = $relation->getModifiers();
+
+        foreach my $m ( @modifiers ) {
+            if ( $m->[1] eq 'fuzzy' ) {
+                $term = "$term~";
+            }
+        }
+
+        if ( $base eq '=' ) {
+            $qualifier = '@' . $qualifier;
+            $base = '';
+        }
+        elsif ( $base =~ /^(?:cql\.)?any$/ ) {
+            $term = join( ' | ' => split(/\s+/ => $term) );
+            $qualifier = '@' . $qualifier;
+            $base = '';
+        }
+        elsif ( $base =~ /^(?:cql\.)?exact$/ ) {
+            $term = '^' . $term . '$';
+            $qualifier = '@' . $qualifier;
+            $base = '';
+        }
+        else {
+            croak( "Manticore doesn't support relations other than '=', 'any', and 'exact'" );
+        }
+        return "$base$qualifier $term";
+    }
+    else {
+        return $term;
+    }
+}
+
 sub maybeQuote {
     my $str = shift;
     return if ! defined $str;

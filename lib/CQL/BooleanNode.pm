@@ -124,6 +124,38 @@ sub toLucene {
     return "\"$leftStr $rightStr\"~$distance";
 }
 
+=head2 toManticore()
+
+=cut
+
+sub toManticore {
+    my $self     = shift;
+
+    my %ops = (
+        'and' => '&',
+        'or'  => '|',
+        'not' => '!',
+    );
+
+    my $left     = $self->left();
+    my $right    = $self->right();
+    my $leftStr  = $left->isa('CQL::TermNode') ? $left->toManticore()
+        : '('.$left->toManticore().')';
+    my $rightStr = $right->isa('CQL::TermNode') ? $right->toManticore()
+        : '('.$right->toManticore().')';
+
+    if ( $self->op() !~ /prox/ ) {
+        my $ret = $leftStr . ' ' . $ops{$self->op()};
+        $ret .= ' ' unless $ops{$self->op()} eq '!';
+        $ret .= $rightStr;
+        return $ret;
+    }
+
+    my $distance = 1;
+    $distance = $1 if $self->op() =~ /\/distance[=><]{1,2}(\d+)/;
+    return "\"$leftStr $rightStr\"~$distance";
+}
+
 sub opXCQL {
     my ($self,$level) = @_;
     return 
