@@ -46,6 +46,7 @@ use constant CQL_EXACT     => 112;    ## The "exact" relation
 use constant CQL_WITHIN    => 113;    ## The "within" relation
 use constant CQL_ENCLOSES  => 114;    ## The "encloses" relation
 use constant CQL_PARTIAL   => 115;    ## The "partial" relation
+use constant CQL_ADJ       => 142;    ## The "adj" relation
 use constant CQL_PWORD     => 116;    ## The "word" proximity unit and the "word" relation modifier
 use constant CQL_SENTENCE  => 117;    ## The "sentence" proximity unit
 use constant CQL_PARAGRAPH => 118;    ## The "paragraph" proximity unit
@@ -77,6 +78,7 @@ our %lookupTable = (
     '<'          => CQL_LT,
     '>'          => CQL_GT,
     '='          => CQL_EQ,
+    '=='         => CQL_EXACT,
     '<='         => CQL_LE,
     '>='         => CQL_GE,
     '<>'         => CQL_NE,
@@ -88,6 +90,7 @@ our %lookupTable = (
     'within'     => CQL_WITHIN,
     'encloses'   => CQL_ENCLOSES,
     'partial'    => CQL_PARTIAL,
+    'adj'        => CQL_ADJ,
     'all'        => CQL_ALL,
     'exact'      => CQL_EXACT,
     'word'       => CQL_PWORD,
@@ -120,7 +123,7 @@ our %lookupTable = (
 
 our @EXPORT = qw(
     CQL_LT CQL_GT CQL_EQ CQL_LE CQL_GE CQL_NE CQL_AND CQL_OR CQL_NOT 
-    CQL_PROX CQL_ANY CQL_ALL CQL_EXACT CQL_PWORD CQL_SENTENCE CQL_PARAGRAPH
+    CQL_PROX CQL_ANY CQL_ALL CQL_ADJ CQL_EXACT CQL_PWORD CQL_SENTENCE CQL_PARAGRAPH
     CQL_ELEMENT CQL_ORDERED CQL_UNORDERED CQL_RELEVANT CQL_FUZZY
     CQL_STEM CQL_SCR CQL_PHONETIC CQL_RPAREN CQL_LPAREN
     CQL_WORD CQL_PHRASE CQL_EOF CQL_MODIFIER CQL_STRING CQL_ISODATE
@@ -166,7 +169,7 @@ sub getType { return shift->{type}; }
 
 =head2 getString()
 
-Retruns the string equivalent of the token. Particularly useful when
+Returns the string equivalent of the token. Particularly useful when
 you only know it's a CQL_WORD.
 
 =cut

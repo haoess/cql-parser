@@ -351,7 +351,7 @@ sub isBaseRelation {
         croak( "unknown first class relation: ".$token->getString() );
     }
     my $type = $token->getType();
-    return( isProxRelation() or $type==CQL_ANY or $type==CQL_ALL 
+    return( isProxRelation() or $type==CQL_ANY or $type==CQL_ALL or $type==CQL_ADJ
         or $type==CQL_EXACT or $type==CQL_SCR or $type==CQL_WORD 
         or $type==CQL_WITHIN or $type==CQL_ENCLOSES);
 }

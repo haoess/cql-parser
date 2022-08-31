@@ -40,4 +40,31 @@ $node = $parser->parse( q[ribs prox/distance>=5/unit=paragraph chevrons] );
 is( $node->toManticore(), q["ribs chevrons"~5], "proximity search, ignore unsupported parameters" );
 
 $node = $parser->parse( q[title exact fish] );
-is( $node->toManticore(), q[@title ^fish$], "exact modifier" );
+is( $node->toManticore(), q[@title ^fish$ & @title =fish], "exact modifier" );
+
+$node = $parser->parse( q[title==fish] );
+is( $node->toManticore(), q[@title ^fish$ & @title =fish], "exact modifier" );
+
+$node = $parser->parse( q[title=fish] );
+is( $node->toManticore(), q[@title fish], "eq modifier (partial match)" );
+
+$node = $parser->parse( q[title<>fish] );
+is( $node->toManticore(), q[@title !fish], "not operator" );
+
+$node = $parser->parse( q[title adj "big fish"] );
+is( $node->toManticore(), q[@title "big fish"], "phrase search" );
+
+$node = $parser->parse( q[title all "big fish"] );
+is( $node->toManticore(), q[@title big & @title fish], "multiple terms via AND" );
+
+$node = $parser->parse( q[title all "big \"fish\""] );
+is( $node->toManticore(), q[@title big & @title "fish"], "multiple terms via AND" );
+
+$node = $parser->parse( q[title any "big fish"] );
+is( $node->toManticore(), q[@title big | @title fish], "multiple terms via OR" );
+
+$node = $parser->parse( q[title any "big \"fish\""] );
+is( $node->toManticore(), q[@title big | @title "fish"], "multiple terms via OR" );
+
+#$node = $parser->parse( q[cql.allRecords = 1 NOT title = fish] );
+#is( $node->toManticore(), q[* & @title !fish], "multiple terms via OR" );
