@@ -193,6 +193,7 @@ sub toManticore {
             if ( $qualifier =~ /^(?:cql\.)?(?:all|any)Indexes$/ ) {
                 $qualifier = '';
             }
+            $qualifier =~ s/\$/__/;
             $qualifier = '@' . $qualifier;
             $base = '';
         }
