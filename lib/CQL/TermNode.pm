@@ -183,6 +183,9 @@ sub toManticore {
             if ( $m->[1] eq 'fuzzy' ) {
                 $term = "$term~";
             }
+            elsif ( $m->[1] eq 'exact' ) {
+                $term = '^'.$term.'$';
+            }
         }
 
         if ( $qualifier =~ /^(?:cql\.)?allRecords$/ and $relation->getBase() eq '=' and $term eq '1' ) {
