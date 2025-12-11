@@ -356,8 +356,8 @@ sub isBaseRelation {
         croak( "unknown first class relation: ".$token->getString() );
     }
     my $type = $token->getType();
-    return( isProxRelation() or $type==CQL_ANY or $type==CQL_ALL
-        or $type==CQL_EXACT or $type==CQL_SCR or $type==CQL_WORD
+    return( isProxRelation() or $type==CQL_ANY or $type==CQL_ALL or $type==CQL_ADJ
+        or $type==CQL_EXACT or $type==CQL_SCR or $type==CQL_WORD 
         or $type==CQL_WITHIN or $type==CQL_ENCLOSES);
 }
 
@@ -378,7 +378,7 @@ sub isRelationModifier {
         or $type==CQL_PHONETIC or $type==CQL_PWORD or $type==CQL_STRING
         or $type==CQL_ISODATE or $type==CQL_NUMBER or $type==CQL_URI
         or $type==CQL_PARTIAL or $type==CQL_MASKED or $type==CQL_UNMASKED
-        or $type==CQL_NWSE);
+        or $type==CQL_NWSE or $type==CQL_EXACT);
 }
 
 sub match {

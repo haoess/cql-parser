@@ -185,24 +185,49 @@ sub toManticore {
             if ( $m->[1] eq 'fuzzy' ) {
                 $term = "$term~";
             }
+            elsif ( $m->[1] eq 'exact' ) {
+                $term = '^'.$term.'$';
+            }
+        }
+
+        if ( $qualifier =~ /^(?:cql\.)?allRecords$/ and $relation->getBase() eq '=' and $term eq '1' ) {
+            return '* &';
         }
 
         my $want_exact;
         if ( $base eq '=' ) {
+            if ( $qualifier =~ /^(?:cql\.)?(?:all|any)Indexes$/ ) {
+                $qualifier = '';
+            }
+            $qualifier =~ s/\$/__/;
             $qualifier = '@' . $qualifier;
             $base = '';
             $want_exact++;
         }
         elsif ( $base =~ /^(?:cql\.)?any$/ ) {
-            $term = join( ' | ' => split(/\s+/ => $term) );
-            $qualifier = '@' . $qualifier;
-            $base = '';
+            my $t = CQL::Token->new($term);
+            my @terms = split /\s+/ => $t->getString;
+            return join ' | ' => map { sprintf '@%s %s', $qualifier, $_ } @terms;
         }
         elsif ( $base eq '==' or $base =~ /^(?:cql\.)?exact$/ ) {
             $term = sprintf '^%s$', $term;
             $qualifier = '@' . $qualifier;
             $base = '';
             $want_exact++;
+        }
+        elsif ( $base =~ /^(?:cql\.)?all$/ ) {
+            my $t = CQL::Token->new($term);
+            my @terms = split /\s+/ => $t->getString;
+            return join ' & ' => map { sprintf '@%s %s', $qualifier, $_ } @terms;
+        }
+        elsif ( $base =~ /^(?:cql\.)?exact$/ or $base eq '==' ) {
+            return sprintf '@%s ^%s$ & @%s =%s', $qualifier, $term, $qualifier, $term;
+        }
+        elsif ( $base eq '<>' ) {
+            return sprintf '@%s !%s', $qualifier, $term;
+        }
+        elsif ( $base eq 'adj' ) {
+            return sprintf '@%s %s', $qualifier, $term;
         }
         else {
             croak( "Manticore doesn't support relations other than '=', '==', 'any', and 'exact'" );
