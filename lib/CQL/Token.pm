@@ -41,6 +41,7 @@ use constant CQL_OR        => 107;    ## The "or" boolean
 use constant CQL_NOT       => 108;    ## The "not" boolean
 use constant CQL_PROX      => 109;    ## The "prox" boolean
 use constant CQL_ANY       => 110;    ## The "any" relation
+use constant CQL_ADJ       => 1100;   ## The "adj" relation
 use constant CQL_ALL       => 111;    ## The "all" relation
 use constant CQL_EXACT     => 112;    ## The "exact" relation
 use constant CQL_WITHIN    => 113;    ## The "within" relation
@@ -77,6 +78,7 @@ our %lookupTable = (
     '<'          => CQL_LT,
     '>'          => CQL_GT,
     '='          => CQL_EQ,
+    '=='         => CQL_EXACT,
     '<='         => CQL_LE,
     '>='         => CQL_GE,
     '<>'         => CQL_NE,
@@ -84,6 +86,7 @@ our %lookupTable = (
     'or'         => CQL_OR,
     'not'        => CQL_NOT,
     'prox'       => CQL_PROX,
+    'adj'        => CQL_ADJ,
     'any'        => CQL_ANY,
     'within'     => CQL_WITHIN,
     'encloses'   => CQL_ENCLOSES,
@@ -120,7 +123,7 @@ our %lookupTable = (
 
 our @EXPORT = qw(
     CQL_LT CQL_GT CQL_EQ CQL_LE CQL_GE CQL_NE CQL_AND CQL_OR CQL_NOT 
-    CQL_PROX CQL_ANY CQL_ALL CQL_EXACT CQL_PWORD CQL_SENTENCE CQL_PARAGRAPH
+    CQL_PROX CQL_ADJ CQL_ANY CQL_ALL CQL_EXACT CQL_PWORD CQL_SENTENCE CQL_PARAGRAPH
     CQL_ELEMENT CQL_ORDERED CQL_UNORDERED CQL_RELEVANT CQL_FUZZY
     CQL_STEM CQL_SCR CQL_PHONETIC CQL_RPAREN CQL_LPAREN
     CQL_WORD CQL_PHRASE CQL_EOF CQL_MODIFIER CQL_STRING CQL_ISODATE

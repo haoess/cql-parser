@@ -172,11 +172,13 @@ sub toManticore {
     my $self      = shift;
     my $qualifier = maybeQuote( $self->getQualifier() );
     my $term      = maybeQuote( $self->getTerm() );
+    my $orig_term = $term;
     my $relation  = $self->getRelation();
 
     my $query;
     if ( $qualifier and $qualifier !~ /srw\.serverChoice/i ) {
         my $base      = $relation->getBase();
+        my $orig_base = $base;
         my @modifiers = $relation->getModifiers();
 
         foreach my $m ( @modifiers ) {
@@ -185,24 +187,31 @@ sub toManticore {
             }
         }
 
+        my $want_exact;
         if ( $base eq '=' ) {
             $qualifier = '@' . $qualifier;
             $base = '';
+            $want_exact++;
         }
         elsif ( $base =~ /^(?:cql\.)?any$/ ) {
             $term = join( ' | ' => split(/\s+/ => $term) );
             $qualifier = '@' . $qualifier;
             $base = '';
         }
-        elsif ( $base =~ /^(?:cql\.)?exact$/ ) {
-            $term = '^' . $term . '$';
+        elsif ( $base eq '==' or $base =~ /^(?:cql\.)?exact$/ ) {
+            $term = sprintf '^%s$', $term;
             $qualifier = '@' . $qualifier;
             $base = '';
+            $want_exact++;
         }
         else {
-            croak( "Manticore doesn't support relations other than '=', 'any', and 'exact'" );
+            croak( "Manticore doesn't support relations other than '=', '==', 'any', and 'exact'" );
         }
-        return "$base$qualifier $term";
+        my $ret = "$base$qualifier $term";
+        if ( $qualifier eq '@lemma' and $want_exact ) {
+            $ret = sprintf '(%s & %s =%s)', $ret, $qualifier, $orig_term;
+        }
+        return $ret;
     }
     else {
         return $term;
@@ -212,7 +221,7 @@ sub toManticore {
 sub maybeQuote {
     my $str = shift;
     return if ! defined $str;
-    if ( $str =~ m|[" \t=<>/()]| ) { 
+    if ( $str =~ m|[" \t=<>/()]| ) {
         $str =~ s/"/\\"/g;
         $str = qq("$str");
     }

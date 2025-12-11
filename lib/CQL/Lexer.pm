@@ -225,6 +225,12 @@ sub _analyze {
             $iterator->nextToken();
         }
 
+        ## ==
+        elsif ( $token eq '=' and $iterator->lookAheadToken() eq '=' ) {
+            push( @tokens, CQL::Token->new( '==' ) );
+            $iterator->nextToken();
+        }
+
         ## "quoted strings"
         elsif ( $token eq '"' ) {
         	my $cqlToken = CQL::Token->new( _getString($iterator) );

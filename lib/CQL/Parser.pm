@@ -100,29 +100,29 @@ sub parse {
     ## initialize lexer
     $lexer = CQL::Lexer->new();
 
-    debug( "about to parse query: $query" ); 
-    
+    debug( "about to parse query: $query" );
+
     ## create the lexer and get the first token
     $lexer->tokenize( $query );
     $token = $lexer->nextToken();
 
     my $root = parseQuery( 'srw.ServerChoice', CQL::Relation->new( 'scr' ) );
-    if ( $token->getType() != CQL_EOF ) { 
+    if ( $token->getType() != CQL_EOF ) {
         croak( "junk after end ".$token->getString() );
     }
-    
+
     return $root;
 }
 
 =head2 parseSafe( $query )
 
 Pass in a CQL query and you'll get back the root node for the CQL parse tree.
-If the CQL is invalid, an error code from the SRU Diagnostics List 
+If the CQL is invalid, an error code from the SRU Diagnostics List
 will be returned.
 
 =cut
 
-my @cql_errors = (
+our @cql_errors = (
     { regex => qr/does not support relational modifiers/,   code => 20 },
     { regex => qr/expected boolean got /,                   code => 37 },
     { regex => qr/expected relation modifier got /,         code => 20 },
@@ -137,7 +137,7 @@ my @cql_errors = (
     { regex => qr/must supply identifier/,                  code => 15 },
     { regex => qr/must supply subtree/,                     code => 15 },
     { regex => qr/must supply term parameter/,              code => 27 },
-    { regex => qr/doesn\'t support relations other than/,   code => 20 },
+    { regex => qr/doesn\'t support relations other than/,   code => 19 },
 );
 
 sub parseSafe {
@@ -162,30 +162,35 @@ sub parseQuery {
     my $term = parseTerm( $qualifier, $relation );
 
     my $type = $token->getType();
-    while ( $type != CQL_EOF and $type != CQL_RPAREN ) { 
-        if ( $type == CQL_AND ) { 
+    while ( $type != CQL_EOF and $type != CQL_RPAREN ) {
+        if ( $type == CQL_AND ) {
             match($token);
             my $term2 = parseTerm( $qualifier, $relation );
             $term = CQL::AndNode->new( left=>$term, right=>$term2 );
-        } 
+        }
+        #elsif ( $type == CQL_ADJ ) {
+        #    match($token);
+        #    my $term2 = parseTerm( $qualifier, $relation );
+        #    $term = CQL::AndNode->new( left=>$term, right=>$term2 );
+        #}
         elsif ( $type == CQL_OR ) {
             match($token);
             my $term2 = parseTerm( $qualifier, $relation );
             $term = CQL::OrNode->new( left=>$term, right=>$term2 );
         }
-        elsif ( $type == CQL_NOT ) { 
+        elsif ( $type == CQL_NOT ) {
             match($token);
             my $term2 = parseTerm( $qualifier, $relation );
             $term = CQL::NotNode->new( left=>$term, right=>$term2 );
         }
-        elsif ( $type == CQL_PROX ) { 
+        elsif ( $type == CQL_PROX ) {
             match($token);
             my $proxNode = CQL::ProxNode->new( $term );
             gatherProxParameters( $proxNode );
             my $term2 = parseTerm( $qualifier, $relation );
             $proxNode->addSecondTerm( $term2 );
             $term = $proxNode;
-        } 
+        }
         else {
             croak( "expected boolean got ".$token->getString() );
         }
@@ -199,14 +204,14 @@ sub parseTerm {
     my ( $qualifier, $relation ) = @_;
     debug( "in parseTerm()" );
     my $word;
-    while ( 1 ) { 
-        if ( $token->getType() == CQL_LPAREN ) { 
+    while ( 1 ) {
+        if ( $token->getType() == CQL_LPAREN ) {
             debug( "parenthesized term" );
             match( CQL::Token->new('(') );
             my $expr = parseQuery( $qualifier, $relation );
             match( CQL::Token->new(')') );
             return $expr;
-        } 
+        }
         elsif ( $token->getType() == CQL_GT ) {
             match( $token );
             return parsePrefix( $qualifier, $relation );
@@ -235,10 +240,10 @@ sub parseTerm {
     debug( "qualifier=$qualifier relation=$relation term=$word" );
     croak( "missing term" ) if ! defined($word) or $word eq '';
 
-    my $node = CQL::TermNode->new( 
-        qualifier   => $qualifier, 
-        relation    => $relation, 
-        term        => $word 
+    my $node = CQL::TermNode->new(
+        qualifier   => $qualifier,
+        relation    => $relation,
+        term        => $word
     );
     debug( "made term node: ".$node->toCQL() );
     return $node;
@@ -258,7 +263,7 @@ sub parsePrefix {
     return CQL::PrefixNode->new(
         name        => $name,
         identifier  => $identifier,
-        subtree     => $node 
+        subtree     => $node
     );
 }
 
@@ -266,12 +271,12 @@ sub gatherProxParameters {
     my $node = shift;
     if (0) {	# CQL 1.0 (obsolete)
     for (my $i=0; $i<4; $i++ ) {
-        if ( $token->getType() != CQL_MODIFIER ) { 
-            ## end of proximity parameters 
+        if ( $token->getType() != CQL_MODIFIER ) {
+            ## end of proximity parameters
             return;
         }
         match($token);
-        if ( $token->getType() != CQL_MODIFIER ) { 
+        if ( $token->getType() != CQL_MODIFIER ) {
             if ( $i==0 ) { gatherProxRelation($node); }
             elsif ( $i==1 ) { gatherProxDistance($node); }
             elsif ( $i==2 ) { gatherProxUnit($node); }
@@ -304,7 +309,7 @@ sub gatherProxParameters {
 
 sub gatherProxRelation {
     my $node = shift;
-    if ( ! isProxRelation() ) { 
+    if ( ! isProxRelation() ) {
         croak( "expected proximity relation got ".$token->getString() );
     }
     $node->addModifier( "relation", $token->getString() );
@@ -314,7 +319,7 @@ sub gatherProxRelation {
 
 sub gatherProxDistance {
     my $node = shift;
-    if ( $token->getString() !~ /^\d+$/ ) { 
+    if ( $token->getString() !~ /^\d+$/ ) {
         croak( "expected proximity distance got ".$token->getString() );
     }
     $node->addModifier( "distance", $token->getString() );
@@ -351,8 +356,8 @@ sub isBaseRelation {
         croak( "unknown first class relation: ".$token->getString() );
     }
     my $type = $token->getType();
-    return( isProxRelation() or $type==CQL_ANY or $type==CQL_ALL 
-        or $type==CQL_EXACT or $type==CQL_SCR or $type==CQL_WORD 
+    return( isProxRelation() or $type==CQL_ANY or $type==CQL_ALL
+        or $type==CQL_EXACT or $type==CQL_SCR or $type==CQL_WORD
         or $type==CQL_WITHIN or $type==CQL_ENCLOSES);
 }
 
@@ -380,7 +385,7 @@ sub match {
     my $expected = shift;
     debug( "in match(".$expected->getString().")" );
     if ( $token->getType() != $expected->getType() ) {
-        croak( "expected ".$expected->getString() . 
+        croak( "expected ".$expected->getString() .
             " but got " . $token->getString() );
     }
     $token = $lexer->nextToken();
@@ -399,7 +404,7 @@ sub debug {
     print STDERR "CQL::Parser: ", shift, "\n";
 }
 
-=head1 XCQL 
+=head1 XCQL
 
 CQL has an XML representation which you can generate from a CQL parse
 tree. Just call the toXCQL() method on the root node you get back
@@ -407,7 +412,7 @@ from a call to parse().
 
 =head1 ERRORS AND DIAGNOSTICS
 
-As mentioned above, a CQL syntax error will result in an exception being 
+As mentioned above, a CQL syntax error will result in an exception being
 thrown. So if you have any doubts about the CQL that you are parsing you
 should wrap the call to parse() in an eval block, and check $@
 afterwards to make sure everything went ok.
@@ -434,9 +439,9 @@ patches!
 
 =back
 
-=head1 THANKYOUS 
+=head1 THANKYOUS
 
-CQL::Parser is essentially a Perl port of Mike Taylor's cql-java package 
+CQL::Parser is essentially a Perl port of Mike Taylor's cql-java package
 http://zing.z3950.org/cql/java/. Mike and IndexData were kind enough
 to allow the author to write this port, and to make it available under
 the terms of the Artistic License. Thanks Mike!
@@ -465,7 +470,7 @@ for more information about Ockham.
 Copyright 2004-2009 by Ed Summers
 
 This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself. 
+it under the same terms as Perl itself.
 
 =cut
 
