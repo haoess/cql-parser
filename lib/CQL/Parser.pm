@@ -238,7 +238,7 @@ sub parseTerm {
     }
 
     debug( "qualifier=$qualifier relation=$relation term=$word" );
-    croak( "missing term" ) if ! defined($word) or $word eq '';
+    croak( "missing term" ) if ! defined($word) or $word eq '' or $word =~ /^[;*?]$/;
 
     my $node = CQL::TermNode->new(
         qualifier   => $qualifier,

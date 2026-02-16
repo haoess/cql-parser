@@ -51,11 +51,11 @@ is( $node->toManticore(), q[@title ^fish$], "exact modifier" );
 #$node = $parser->parse( q[title adj fish] );
 #is( $node->toManticore(), q[@title ^fish$], "exact modifier" );
 
-$node = $parser->parse( q[pos = ADJ and xr$synonymy = "tiny"] );
-is( $node->toManticore(), q[@title ^fish$ & @title =fish], "exact modifier" );
+$node = $parser->parse( q[pos = NOUN and synonym = "Toolbar"] );
+is( $node->toManticore(), q[@pos NOUN & @synonym Toolbar], "semantic relation" );
 
 $node = $parser->parse( q[title==fish] );
-is( $node->toManticore(), q[@title ^fish$ & @title =fish], "exact modifier" );
+is( $node->toManticore(), q[@title ^fish$], "exact modifier" );
 
 $node = $parser->parse( q[title=fish] );
 is( $node->toManticore(), q[@title fish], "eq modifier (partial match)" );
