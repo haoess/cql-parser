@@ -175,6 +175,13 @@ sub toManticore {
     my $orig_term = $term;
     my $relation  = $self->getRelation();
 
+    my %qualifier_aliases = (
+        def => 'definition',
+    );
+    if ( $qualifier ) {
+        $qualifier = $qualifier_aliases{$qualifier} if exists $qualifier_aliases{$qualifier};
+    }
+
     my $query;
     if ( $qualifier and $qualifier !~ /srw\.serverChoice/i ) {
         my $base      = $relation->getBase();
