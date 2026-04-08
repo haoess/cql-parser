@@ -170,7 +170,7 @@ sub toLucene {
 
 sub toManticore {
     my $self      = shift;
-    my $qualifier = maybeQuote( $self->getQualifier() );
+    my $qualifier = lc maybeQuote( $self->getQualifier() );
     my $term      = maybeQuote( $self->getTerm() );
     my $orig_term = $term;
     my $relation  = $self->getRelation();
@@ -184,7 +184,7 @@ sub toManticore {
 
     my $query;
     if ( $qualifier and $qualifier !~ /srw\.serverChoice/i ) {
-        my $base      = $relation->getBase();
+        my $base      = lc $relation->getBase();
         my $orig_base = $base;
         my @modifiers = $relation->getModifiers();
 

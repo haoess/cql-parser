@@ -80,3 +80,9 @@ is( $node->toManticore(), q[@title big | @title "fish"], "multiple terms via OR"
 
 #$node = $parser->parse( q[cql.allRecords = 1 NOT title = fish] );
 #is( $node->toManticore(), q[* & @title !fish], "multiple terms via OR" );
+
+$node = $parser->parse( q[TITLE EXACT fish] );
+is( $node->toManticore(), q[@title ^fish$], "exact modifier" );
+
+$node = $parser->parse( q[TITLE == fish] );
+is( $node->toManticore(), q[@title ^fish$], "exact modifier" );
